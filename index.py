@@ -23,8 +23,8 @@ def getNgrams(line):
 	tokens = []
 	for i in range(0, length):
 		ngram = ()
-		if (i + 2) < length:
-			ngram = (line[i], line[i+1], line[i+2])
+		if (i + 1) < length:
+			ngram = (line[i], line[i+1])
 			tokens.append(ngram)
 	return tokens
 
