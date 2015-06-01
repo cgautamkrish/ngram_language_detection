@@ -1,5 +1,6 @@
 import codecs
 import nltk
+from nltk import RegexpTokenizer
 import collections
 import operator
 
@@ -23,8 +24,8 @@ def getNgrams(line):
 	tokens = []
 	for i in range(0, length):
 		ngram = ()
-		if (i + 1) < length:
-			ngram = (line[i], line[i+1])
+		if (i + 2) < length:
+			ngram = (line[i], line[i+1], line[i+2])
 			tokens.append(ngram)
 	return tokens
 
@@ -38,7 +39,9 @@ lang_dict = {'indonesian' : indonesian, 'malaysian' : malaysian, 'tamil' : tamil
 file_content = getFileContents('input.train.txt')
 for line in file_content:
 	try:
-		tokens = nltk.word_tokenize(line)
+		#tokens = nltk.word_tokenize(line)
+		tokenizer = RegexpTokenizer(r'\w+')
+		tokens = tokenizer.tokenize(line)
 		language = tokens[0]
 		del tokens[0]
 		ngrams = getNgrams(tokens)
@@ -82,10 +85,13 @@ for key in lang_probabilities:
 # Now test it on the test text data (input.test.txt)
 test_file_contents = getFileContents('input.test.txt')
 
+count = 0
 for line in test_file_contents:
 	try:
+		count += 1
 		probability = {'indonesian' : 0, 'malaysian' : 0, 'tamil' : 0, 'others' : 0}
-		tokens = nltk.word_tokenize(line)
+		tokenizer = RegexpTokenizer(r'\w+')
+		tokens = tokenizer.tokenize(line)
 		line_ngrams = getNgrams(tokens)
 		for i in line_ngrams:
 			for j in lang_probabilities:
@@ -95,8 +101,11 @@ for line in test_file_contents:
 							probability[j] = lang_probabilities[j][item]
 						else:
 							probability[j] = probability[j] * lang_probabilities[j][item]
-		likely_language = max(probability.items(), key=operator.itemgetter(1))[0]
-		print("Detected language: " + likely_language)
+		if (probability['indonesian'] == 0) and (probability['malaysian'] == 0) and (probability['tamil'] == 0) and (probability['others'] == 0):
+			print("Line " + str(count) + ": Unknown")
+		else:
+			likely_language = max(probability.items(), key=operator.itemgetter(1))[0] 
+			print("Line " + str(count) + ": " + likely_language)
 	except UnicodeEncodeError:
 		pass
 
